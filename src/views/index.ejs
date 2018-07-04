@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>upload-progress-node</title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  
+  <style>
+    body {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <label>Escolha um arquivo</label>
+        <input id="file" name="file" type="file" />
+      </div>
+    </div>
+    <div id="progress-bar" class="progress">
+      <div id="progress" class="progress-bar" role="progressbar" >
+        <span class="sr-only">60% Complete</span>
+      </div>
+    </div>
+    <div>
+      <p id="feedback"></p>
+    </div>
+  </div>
+
+  <script>
+    let total = 0;
+    let progress = document.getElementById("progress");
+    let feedback = document.getElementById("feedback");
+
+    function handleFileSelect() {
+      let formData = new FormData();
+      let file = document.getElementById('file').files[0];
+      formData.append('file', file);
+      let xhr = new XMLHttpRequest();
+
+      // url upload
+      xhr.open('post', '/', true);
+
+      xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+          let percentage = (e.loaded / e.total) * 100;
+          progress.setAttribute('style', `width: ${percentage}%`);
+          
+          if (percentage == 100) {
+            progress.setAttribute('style', `width: 0%`);
+            feedback.textContent = "Finalizando...";
+            document.getElementById('file').value = "";
+          }
+        }
+      };
+
+      xhr.onerror = function(e) {
+        console.log('Error');
+        console.log(e);
+      };
+      xhr.onload = function() {
+        const result = JSON.parse(this.response);
+        feedback.textContent = `Salvo em: ${result.path}`;
+      };
+
+      xhr.send(formData);
+    }
+
+    document.getElementById('file').addEventListener('change', handleFileSelect, false);
+  </script>
+</body>
+</html>
